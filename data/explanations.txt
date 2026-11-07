@@ -1,0 +1,65 @@
+MERGE SORT EXPL:
+Merge Sort is a divide-and-conquer sorting algorithm. The idea is simple: instead of trying to sort the whole array at once, I break it down into smaller and smaller pieces until each piece is trivially sorted — just one element — and then I merge those pieces back together in sorted order.
+So there are two parts to this. First, the dividing part — I keep splitting the array into two halves, left and right, using a mid index, and I do that recursively until I hit the base case, which is when low >= high, meaning there's just one element left, or none.
+Second, the merging part — this is where the actual sorting logic lives. Once I have two halves that are already sorted — because of the recursion — I merge them into one sorted array. I do this using two pointers, one starting at the beginning of the left half and one at the beginning of the right half. I compare the elements the pointers point to, push whichever is smaller into a temporary array, and move that pointer forward. I keep doing this until one side runs out, then I just copy over whatever's left on the other side. Finally, I copy that temp array back into the original array in the correct range.
+Let me quickly dry run it on [6, 3, 8, 2] so it's concrete.
+It splits like this:
+[6,3,8,2] → [6,3] and [8,2] → then further into [6] [3] and [8] [2].
+Now it merges back up:
+
+[6] and [3] merge → compare 6 and 3, 3 is smaller → [3, 6]
+[8] and [2] merge → compare 8 and 2, 2 is smaller → [2, 8]
+Now merge [3,6] and [2,8] → compare 3 and 2 → 2 goes in. Compare 3 and 8 → 3 goes in. Compare 6 and 8 → 6 goes in. Right side still has 8 left, so I just copy it over → final result [2, 3, 6, 8].
+
+In terms of complexity — splitting takes log n levels since I'm halving each time, and at every level, merging all the elements takes O(n) work. So overall it's O(n log n) time. Space-wise, it's O(n) because of that temporary array I use during merging — it's not an in-place algorithm.
+One more thing I'd mention if asked: it's a stable sort, since when elements are equal, I always take from the left half first, so their original relative order is preserved."
+mergesort(arr,low,high){
+     if(low>=high) return ; //base case ,it meets when there is single ele,that means it points to same index 
+     int mid=(low+high)/2;  
+     mergesort(arr,low,mid);  .// left half
+    mergesort(arr,mid+1,high); // right half
+    merger(arr,low,mid,high);
+}
+o memergeSort(arr, 0, 3)          // low=0, high=3, mid=1
+  → not base case, mid = (0+3)/2 = 1
+  → calls mergeSort(arr, 0, 1)       [left half]
+Going deeper into left half:
+mergeSort(arr, 0, 1)          // low=0, high=1, mid=0
+  → not base case, mid = (0+1)/2 = 0
+  → calls mergeSort(arr, 0, 0)       [left]
+        low=0, high=0 → low>=high → BASE CASE, return
+  → calls mergeSort(arr, 1, 1)       [right]
+        low=1, high=1 → low>=high → BASE CASE, return
+  → both sides returned, now calls merge(arr, 0, 0, 1)
+        merges [6] and [3] → arr becomes [3, 6, 8, 2]
+  → mergeSort(arr, 0, 1) is done, returns
+Back to the top call, now going into right half:
+mergeSort(arr, 0, 3) resumes
+  → calls mergeSort(arr, 2, 3)       [right half]
+Going deeper into right half:
+mergeSort(arr, 2, 3)          // low=2, high=3, mid=2
+  → not base case, mid = (2+3)/2 = 2
+  → calls mergeSort(arr, 2, 2)       [left]
+        low=2, high=2 → BASE CASE, return
+  → calls mergeSort(arr, 3, 3)       [right]
+        low=3, high=3 → BASE CASE, return
+  → both returned, now calls merge(arr, 2, 2, 3)
+        merges [8] and [2] → arr becomes [3, 6, 2, 8]
+  → mergeSort(arr, 2, 3) is done, returns
+Back to the very top call:
+mergeSort(arr, 0, 3) resumes
+  → both mergeSort(0,1) and mergeSort(2,3) are done
+  → calls merge(arr, 0, 1, 3)
+        left half = [3, 6]  (indices 0 to mid=1)
+        right half = [2, 8] (indices mid+1=2 to high=3)
+        compare 3 vs 2 → 2 smaller → temp = [2]
+        compare 3 vs 8 → 3 smaller → temp = [2, 3]
+        compare 6 vs 8 → 6 smaller → temp = [2, 3, 6]
+        right side out of elements, copy remaining 8 → temp = [2, 3, 6, 8]
+        copy temp back into arr[0..3]
+  → final array: [2, 3, 6, 8]
+How to say this out loud, compressed
+"The function keeps calling itself on the left half first, all the way down until low >= high — that's the base case, a single element. Then it does the same for the right half. Only once both recursive calls return does it call merge() on that range — so merging always happens bottom-up, smallest pieces first, and by the time we merge a range, both halves are already guaranteed sorted from the recursive calls below."
+That one sentence — "merge happens bottom-up, and each merge assumes both halves are already sorted" — is the core insight interviewers .
+
+
